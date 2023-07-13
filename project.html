@@ -1,0 +1,155 @@
+<head>
+    <title>Analisi matematica con PyScript</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="stile.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz" crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <py-config>
+        packages = ["sympy","ziamath","matplotlib","numpy"]
+      </py-config>
+    <nav class="navbar" style="background-color: #000000">
+      <div class="app-header">
+          <a href="/">
+              <img src="https://pyscript.net/examples/logo.png" class="logo" />
+          </a>
+          <a class="title" href="" style="color: #f0ab3c">Analisi matematica con PyScript</a>
+      </div>
+  </nav>
+    <div id="main" class="container">
+        Inserisci la funzione (in incognita x) <br/>
+        <div class="form-group row">
+        <div class="col-9">
+          <input type="text" id="funzione" name="funzione">
+        </div>
+          <div class="col-3">
+          <button py-click="conferma_fun()" type="button" class="btn" id="butt_fun">Conferma</button>
+        </div><br/><br>
+        </div>
+        <div class="form-group row" id="scrivi">
+
+        </div>
+        
+        <div id ="scelte" class="form-group row hidden">
+          <div class="col-9">
+          <select id="opzioni">
+          <option selected="" disabled> Che cosa vuoi calcolare?</option>
+          <option value="DER">Derivata</option>
+          <option value="INTI">Integrale Indefinito</option>
+          <option value="INTD">Integrale Definito</option>
+          <option value="LIM">Limite</option>
+        </select>
+          </div>
+          <div class="col-3">
+            <button py-click="conferma_scelta()" type="button" class="btn" id="butt_scelta">Conferma</button><br/><br>
+          </div>
+        </div>
+      
+        <div id="indef" class="form-group row hidden">
+          <div class="col-4">
+            <input type="text" id="inf" name="inf" value="0" size="3">
+          <label for="inf">Limite Inferiore</label>
+          </div>
+          <div class="col-1"></div>
+          <div class="col-4">
+          <input type="text" id="sup" name="sup" value="0" size="3">
+          <label for="sup">Limite Superiore</label>
+        </div>
+          <div class="col-3">
+            <button py-click="conferma_int()" class="btn" id="butt_indef">Conferma</button>
+          </div>
+        </div>
+        <div id="limite" class="form-group hidden row">
+          <div class="col-9">
+            <input type="text" id="tende" name="tende" value="0" size="3">
+          <label for="inf">Limite tendente a (digita oo per infinito) </label>
+          </div>
+          <div class="col-3">
+            <button py-click="conferma_lim()" class="btn" id="butt_lim">Conferma</button>
+          </div>
+        </div>
+        <div id="out" class="form-group row"></div>
+        <div class="form-group row" id="disegno">
+
+        </div>
+      </div>
+
+    <py-script>
+        import sympy as sp
+        import ziamath as zm
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        x = sp.symbols('x')
+        out = Element("out")
+        indefinito = Element("indef")
+        limite = Element("limite")
+        scelte = Element("scelte")
+        scrivi = Element("scrivi")
+        disegno = Element("disegno")
+
+        def disegna(f):
+          lam_x = sp.lambdify(x, f, modules=['numpy'])
+          assex = np.linspace(-10,10)
+          assey = lam_x(assex)
+          fig,ax = plt.subplots()
+          plt.plot(assex,assey)
+          plt.grid(True)
+          plt.show()
+          disegno.write(fig)
+        
+        def reset():
+          out.clear()
+          indefinito.add_class("hidden")
+          limite.add_class("hidden")
+
+        def conferma_fun():
+          reset()
+          global f
+          try:
+            f = sp.sympify(Element("funzione").value)
+            scelte.remove_class("hidden")
+            out.remove_class("errore")
+            scrivi.write(zm.Text("Funzione: $y={}$".format(sp.latex(f))))
+            disegna(f)
+          except:
+            scrivi.clear()
+            disegno.clear()
+            scelte.add_class("hidden")
+            out.write("Funzione in formato errato, riprova.")
+            out.add_class("errore")
+
+        def conferma_scelta():
+          reset()
+          selezionato = Element("opzioni").value
+          if selezionato=="DER":
+            der = sp.diff(f, x)
+            out.write(zm.Text("La derivata della funzione è ${}$".format(sp.latex(der))))
+          elif selezionato=="INTI":
+            inti = sp.integrate(f, x)
+            out.write(zm.Text("L'integrale indefinito della funzione è ${}$".format(sp.latex(inti))))
+          elif selezionato=="INTD":
+              indefinito.remove_class("hidden")
+          elif selezionato=="LIM":
+              limite.remove_class("hidden")
+
+        def conferma_int():
+          reset()
+          li = Element("inf").element.value
+          ls = Element("sup").element.value
+          intd = sp.integrate(f, (x, li, ls))
+          out.write(zm.Latex(sp.latex(intd)))
+
+        def conferma_lim():
+          reset()
+          t = Element("tende").element.value
+          lim = sp.limit(f,x,t)
+          out.write(zm.Latex(sp.latex(lim)))
+        
+        
+        
+    </py-script>
+</body>
+</html>
