@@ -47,7 +47,7 @@
           </div>
         </div>
       
-        <div id="indef" class="form-group row hidden">
+        <div id="def" class="form-group row hidden">
           <div class="col-4">
             <input type="text" id="inf" name="inf" value="0" size="3">
           <label for="inf">Limite Inferiore</label>
@@ -84,7 +84,7 @@
 
         x = sp.symbols('x')
         out = Element("out")
-        indefinito = Element("indef")
+        definito = Element("def")
         limite = Element("limite")
         scelte = Element("scelte")
         scrivi = Element("scrivi")
@@ -102,7 +102,7 @@
         
         def reset():
           out.clear()
-          indefinito.add_class("hidden")
+          definito.add_class("hidden")
           limite.add_class("hidden")
 
         def conferma_fun():
@@ -131,7 +131,7 @@
             inti = sp.integrate(f, x)
             out.write(zm.Text("L'integrale indefinito della funzione è ${}$".format(sp.latex(inti))))
           elif selezionato=="INTD":
-              indefinito.remove_class("hidden")
+              definito.remove_class("hidden")
           elif selezionato=="LIM":
               limite.remove_class("hidden")
 
