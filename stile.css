@@ -1,4 +1,4 @@
-/* src/styles/pyscript_base.css */
+/* src/styles/pyscript_base.css STILI PYSCRIPT*/ 
 py-config {
     display: none;
   }
@@ -265,7 +265,7 @@ py-config {
   }
   
   /*# sourceMappingURL=pyscript.css.map */
-  nav {
+nav {
     position: sticky;
     width: 100%;
     top: 0;
@@ -297,24 +297,24 @@ py-config {
     padding: 0.5rem 1rem;
 }
 
+/*ALTRI STILI*/
+
 label{
-    margin-right:30px;
+  margin-right:30px;
 }
 
 #main #out #scrivi #disegno #scelte{
-    margin: 50px;
-    color:black;
+  margin: 50px;
+  color:black;
 }
 
 .hidden{
-  display: none;
+display: none;
 }
 
 .row.hidden{
-  display:none;
+display:none;
 }
-
-/*ALTRI STILI*/
 
 button.btn{
   background-color: #f0ab3c;
