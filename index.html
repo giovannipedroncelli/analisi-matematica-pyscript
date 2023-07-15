@@ -11,16 +11,21 @@
     <py-config>
         packages = ["sympy","ziamath","matplotlib","numpy"]
       </py-config>
-        <nav class="navbar" style="background-color: #000000;">
-      <div class="app-header">
-          <a href="/">
-              <img src="https://pyscript.net/examples/logo.png" class="logo" />
-          </a>
-          <a class="title" href=""style="color: #f0ab3c;">Analisi matematica con PyScript</a>
-      </div>
-  </nav>
+      <header>
+        <!-- Fixed navbar -->
+        <header>
+          <nav class="navbar navbar-expand-md fixed-top">
+            <div class="app-header">
+                <a href="/">
+                    <img src="https://pyscript.net/examples/logo.png" class="logo" />
+                </a>
+                <a class="title" href=""style="color: #f0ab3c;">Analisi matematica con PyScript</a>
+            </div>
+        </nav>
+        </header>
+        
     
-    <div id="main" class="container">
+    <main id="main" class="container">
       <!-- Button trigger modal -->
 
 <!-- Modal -->
@@ -103,7 +108,7 @@
         <div class="form-group row" id="disegno">
 
         </div>
-      </div>
+      </main>
       <footer class="footer fixed-bottom text-center" style="height: 40px;line-height: 40px;background-color: #000000;color: #f0ab3c;">
         <span>Fatto con <a href="https://pyscript.net" target="_blank" style="color: #f0ab3c; font-weight:bold">PyScript</a></span>
       </footer>
