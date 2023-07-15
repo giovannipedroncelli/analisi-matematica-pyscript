@@ -266,7 +266,7 @@ py-config {
   
   /*# sourceMappingURL=pyscript.css.map */
 nav {
-    position: sticky;
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 9999;
