@@ -271,6 +271,7 @@ nav {
     top: 0;
     left: 0;
     z-index: 9999;
+    background-color: #000000;
 }
 
 .logo {
@@ -289,6 +290,7 @@ nav {
     font-size: 1.5em;
     line-height: 2em;
     white-space: nowrap;
+    color: #f0ab3c;
 }
 
 .app-header {
@@ -304,7 +306,7 @@ label{
 }
 
 #main #out #scrivi #disegno #scelte{
-  margin: 50px;
+  margin: 10px;
   color:black;
 }
 
@@ -318,10 +320,14 @@ display:none;
 
 button.btn{
   background-color: #f0ab3c;
+  float:right;
+}
+button.btn:hover{
+  background-color: #ab6c06
 }
 
 .container{
-  margin-top:50px;
+  margin-top:20px;
 }
 
 .errore{
@@ -334,5 +340,12 @@ button.btn{
   width:100%;
 }
 #scrivi{
-  margin:50px;
+  margin:10px;
 }
+.footer {
+  height: 40px; /* Set the fixed height of the footer here */
+  line-height: 40px; /* Vertically center the text there */
+  background-color: #000000;
+  color: #f0ab3c;
+}
+  
