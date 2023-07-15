@@ -187,13 +187,13 @@
           li = Element("inf").element.value
           ls = Element("sup").element.value
           intd = sp.integrate(f, (x, li, ls))
-          out.write(zm.Latex(sp.latex(intd)))
+          out.write(zm.Text("L'integrale definito della funzione è ${}$".format(sp.latex(intd))))
 
         def conferma_lim():
           reset()
           t = Element("tende").element.value
           lim = sp.limit(f,x,t)
-          out.write(zm.Latex(sp.latex(lim)))
+          out.write(zm.Text("Il limite della funzione è ${}$".format(sp.latex(lim))))
         
         
         
