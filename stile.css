@@ -286,8 +286,8 @@ nav {
     text-decoration-style: initial;
     text-decoration-color: initial;
     font-weight: 400;
-    font-size: 1.5em;
-    line-height: 2em;
+    /*font-size: 1.5em;*/
+    /*line-height: 2em;*/
     white-space: nowrap;
     color: #f0ab3c;
 }
@@ -336,6 +336,7 @@ button.btn:hover{
 }
 
 #funzione{
+  display:block;
   width:100%;
 }
 #scrivi{
