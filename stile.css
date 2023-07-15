@@ -350,6 +350,7 @@ button.btn:hover{
   line-height: 40px; /* Vertically center the text there */
   background-color: #000000;
   color: #f0ab3c;
+  margin-top: 50px;
 }
 #istruzioni{
   margin-bottom: 10px;
