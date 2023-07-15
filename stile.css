@@ -304,10 +304,10 @@ label{
   margin-right:30px;
 }
 
-#main #out #scrivi #disegno #scelte{
+/*#main #out #scrivi #disegno #scelte{
   margin: 10px;
   color:black;
-}
+}*/
 
 .hidden{
 display: none;
@@ -347,4 +347,6 @@ button.btn:hover{
   background-color: #000000;
   color: #f0ab3c;
 }
-  
+#istruzioni{
+  margin-bottom: 10px;
+}
