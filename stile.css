@@ -322,7 +322,7 @@ button.btn{
   float:right;
 }
 button.btn:hover{
-  background-color: #ab6c06
+  background-color: #ab6c06;
 }
 
 .container{
@@ -336,8 +336,9 @@ button.btn:hover{
 }
 
 #funzione{
-  display:block;
-  width:100%;
+  width:80%;
+  max-width:80%;
+  float:left;
 }
 #scrivi{
   margin:10px;
