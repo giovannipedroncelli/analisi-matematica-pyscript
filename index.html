@@ -11,17 +11,10 @@
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
     
-    <!-- MathJax for LaTeX rendering -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']]
-            }
-        };
-    </script>
+    <!-- KaTeX for LaTeX rendering (più veloce e compatibile di MathJax) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     
     <style>
         /* STILI PYSCRIPT BASE */
@@ -231,7 +224,7 @@
     <header>
         <nav class="navbar navbar-expand-md fixed-top">
             <div class="app-header">
-                <img src="https://pyscript.net/assets/images/pyscript-sticker-black.svg" class="logo" alt="PyScript Logo" />
+                <img src="https://pyscript.net/examples/logo.png" class="logo" alt="PyScript Logo" />
                 <a class="title" href="#" style="color: #f0ab3c;">Analisi matematica con PyScript</a>
             </div>
         </nav>
@@ -339,7 +332,7 @@ import sympy as sp
 import matplotlib.pyplot as plt
 import numpy as np
 from pyscript import document
-from js import MathJax
+from js import document, katex
 
 # Variabili globali
 x = sp.symbols('x')
@@ -368,7 +361,7 @@ def render_math(latex_expr, element_id):
         math_html = f'<div class="math-output">$$y = {latex_expr}$$</div>'
         element.innerHTML = math_html
         # Aggiorna MathJax per renderizzare il nuovo contenuto
-        MathJax.typesetPromise([element])
+        window.MathJax.typeset([element])
 
 def disegna(f_expr):
     """Disegna il grafico della funzione"""
@@ -401,11 +394,17 @@ def disegna(f_expr):
         plt.axhline(y=0, color='k', linewidth=0.5)
         plt.axvline(x=0, color='k', linewidth=0.5)
         
-        disegno = get_element("disegno")
-        disegno.innerHTML = '<div class="plot-container"></div>'
-        
-        display(plt.gcf(), target="disegno .plot-container")
+        # Salva il grafico come immagine base64
+        import io, base64
+        buf = io.BytesIO()
+        plt.savefig(buf, format='png', bbox_inches='tight')
+        buf.seek(0)
+        img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        buf.close()
         plt.close()
+        
+        disegno = get_element("disegno")
+        disegno.innerHTML = f'<div class="plot-container"><img src="data:image/png;base64,{img_base64}" style="max-width: 100%;"/></div>'
         
     except Exception as e:
         disegno = get_element("disegno")
@@ -441,9 +440,18 @@ def conferma_fun(event):
         funzione_str = funzione_input.value.replace('^', '**')
         f = sp.sympify(funzione_str)
         
-        # Mostra la funzione formattata
-        scrivi.innerHTML = f'<div class="math-output">Funzione inserita: $$y = {sp.latex(f)}$$</div>'
-        MathJax.typesetPromise([scrivi])
+        # Mostra la funzione formattata con KaTeX
+        latex_expr = sp.latex(f)
+        scrivi.innerHTML = f'''
+        <div class="function-display">
+            <h5 style="color: #333; margin-bottom: 15px;">Funzione inserita:</h5>
+            <div class="formula-box" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                <div id="formula-container"></div>
+            </div>
+        </div>
+        '''
+        # Renderizza con KaTeX
+        katex.render(f"f(x) = {latex_expr}", scrivi.querySelector("#formula-container"), {"displayMode": True})
         
         # Mostra le opzioni
         scelte.classList.remove("hidden")
@@ -471,13 +479,15 @@ def conferma_scelta(event):
     try:
         if selezionato == "DER":
             der = sp.diff(f, x)
-            out.innerHTML = f'<div class="math-output">La derivata della funzione è: $$\\frac{{dy}}{{dx}} = {sp.latex(der)}$$</div>'
-            MathJax.typesetPromise([out])
+            der_latex = sp.latex(der)
+            out.innerHTML = '<div class="math-output">La derivata della funzione è: <div id="der-result"></div></div>'
+            katex.render(f"\\frac{{df}}{{dx}} = {der_latex}", out.querySelector("#der-result"), {"displayMode": True})
             
         elif selezionato == "INTI":
             inti = sp.integrate(f, x)
-            out.innerHTML = f'<div class="math-output">L\'integrale indefinito della funzione è: $$\\int f(x) dx = {sp.latex(inti)} + C$$</div>'
-            MathJax.typesetPromise([out])
+            inti_latex = sp.latex(inti)
+            out.innerHTML = '<div class="math-output">L\'integrale indefinito della funzione è: <div id="int-result"></div></div>'
+            katex.render(f"\\int f(x) dx = {inti_latex} + C", out.querySelector("#int-result"), {"displayMode": True})
             
         elif selezionato == "INTD":
             definito.classList.remove("hidden")
@@ -516,8 +526,11 @@ def conferma_int(event):
             ls = sp.sympify(ls)
         
         intd = sp.integrate(f, (x, li, ls))
-        out.innerHTML = f'<div class="math-output">L\'integrale definito della funzione è: $$\\int_{{{sp.latex(li)}}}^{{{sp.latex(ls)}}} f(x) dx = {sp.latex(intd)}$$</div>'
-        MathJax.typesetPromise([out])
+        li_latex = sp.latex(li)
+        ls_latex = sp.latex(ls)
+        intd_latex = sp.latex(intd)
+        out.innerHTML = '<div class="math-output">L\'integrale definito della funzione è: <div id="intd-result"></div></div>'
+        katex.render(f"\\int_{{{li_latex}}}^{{{ls_latex}}} f(x) dx = {intd_latex}", out.querySelector("#intd-result"), {"displayMode": True})
         
     except Exception as e:
         out.innerHTML = f'<div class="errore">Errore nel calcolo dell\'integrale: {str(e)}</div>'
@@ -541,8 +554,10 @@ def conferma_lim(event):
             t = sp.sympify(t)
         
         lim = sp.limit(f, x, t)
-        out.innerHTML = f'<div class="math-output">Il limite della funzione è: $$\\lim_{{x \\to {sp.latex(t)}}} f(x) = {sp.latex(lim)}$$</div>'
-        MathJax.typesetPromise([out])
+        t_latex = sp.latex(t)
+        lim_latex = sp.latex(lim)
+        out.innerHTML = '<div class="math-output">Il limite della funzione è: <div id="lim-result"></div></div>'
+        katex.render(f"\\lim_{{x \\to {t_latex}}} f(x) = {lim_latex}", out.querySelector("#lim-result"), {"displayMode": True})
         
     except Exception as e:
         out.innerHTML = f'<div class="errore">Errore nel calcolo del limite: {str(e)}</div>'
