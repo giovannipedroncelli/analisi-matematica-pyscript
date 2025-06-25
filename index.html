@@ -4,17 +4,18 @@
   <meta charset="UTF-8">
   <title>Analisi matematica con PyScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
   <script defer src="https://pyscript.net/latest/pyscript.js"></script>
-  <py-env>
-    - sympy
-    - numpy
-    - matplotlib
-  </py-env>
+  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+  <script type="py-config">
+    {
+      "packages": ["sympy", "numpy", "matplotlib"]
+    }
+  </script>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="container py-5">
-  <h1>Analisi matematica con PyScript</h1>
+
+  <h1>Analisi matematica</h1>
 
   <div class="mb-3">
     <input type="text" id="funzione" class="form-control" value="x**2 + 3*x + 2">
@@ -29,7 +30,7 @@
     </select>
   </div>
 
-  <div id="extra" class="mb-3">
+  <div class="mb-3" id="parametri_extra">
     <input type="text" id="limite_inf" class="form-control mb-2" placeholder="Limite inferiore" style="display:none">
     <input type="text" id="limite_sup" class="form-control mb-2" placeholder="Limite superiore" style="display:none">
     <input type="text" id="punto_limite" class="form-control" placeholder="x tende a..." style="display:none">
@@ -37,66 +38,71 @@
 
   <button id="calcola" class="btn btn-warning">Calcola</button>
 
-  <h3>Risultato:</h3>
+  <h3 class="mt-4">Risultato:</h3>
   <pre id="output"></pre>
 
-  <h3>Grafico:</h3>
-  <div id="plot"></div>
+  <h3 class="mt-4">Grafico:</h3>
+  <div id="grafico"></div>
 
   <py-script>
-from pyscript import Element, create_proxy, write
+from pyscript import Element, display
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 
-x = sp.symbols('x')
+x = sp.Symbol('x')
 
-def onchange(event):
-    v = Element("opzione").value
+def mostra_parametri():
+    scelta = Element("opzione").value
     Element("limite_inf").element.style.display = "none"
     Element("limite_sup").element.style.display = "none"
     Element("punto_limite").element.style.display = "none"
-    if v == "integrale_definito":
+    if scelta == "integrale_definito":
         Element("limite_inf").element.style.display = "block"
         Element("limite_sup").element.style.display = "block"
-    elif v == "limite":
+    elif scelta == "limite":
         Element("punto_limite").element.style.display = "block"
 
-def oncalc(event):
-    output = Element("output")
-    plot_div = Element("plot")
-    output.clear()
-    plot_div.clear()
+def calcola():
+    out = Element("output")
+    out.clear()
+    plot = Element("grafico")
+    plot.clear()
     try:
-        f = sp.sympify(Element("funzione").value)
-        opt = Element("opzione").value
-        if opt=="derivata":
-            res = sp.diff(f, x)
-        elif opt=="integrale_indefinito":
-            res = sp.integrate(f, x)
-        elif opt=="integrale_definito":
+        f_expr = Element("funzione").value
+        f = sp.sympify(f_expr)
+        scelta = Element("opzione").value
+
+        if scelta == "derivata":
+            risultato = sp.diff(f, x)
+        elif scelta == "integrale_indefinito":
+            risultato = sp.integrate(f, x)
+        elif scelta == "integrale_definito":
             a = sp.sympify(Element("limite_inf").value)
             b = sp.sympify(Element("limite_sup").value)
-            res = sp.integrate(f, (x, a, b))
-        else:
-            pt = Element("punto_limite").value
-            punkt = sp.oo if pt=="oo" else -sp.oo if pt=="-oo" else sp.sympify(pt)
-            res = sp.limit(f, x, punkt)
+            risultato = sp.integrate(f, (x, a, b))
+        elif scelta == "limite":
+            t = Element("punto_limite").value
+            t_val = sp.oo if t == "oo" else -sp.oo if t == "-oo" else sp.sympify(t)
+            risultato = sp.limit(f, x, t_val)
 
-        output.write(f"{sp.latex(res)}")
+        out.write(f"Risultato: {sp.latex(risultato)}")
 
-        xs = np.linspace(-10,10,400)
-        ys = sp.lambdify(x, f, "numpy")(xs)
+        f_lambdified = sp.lambdify(x, f, "numpy")
+        xs = np.linspace(-10, 10, 500)
+        ys = f_lambdified(xs)
+
         fig, ax = plt.subplots()
-        ax.plot(xs, ys); ax.grid()
-        write("plot", fig)
+        ax.plot(xs, ys)
+        ax.set_title("Grafico della funzione")
+        ax.grid()
+        display(fig, target="grafico")
 
     except Exception as e:
-        output.write(f"Errore: {e}")
+        out.write(f"Errore: {e}")
 
-# associa callback corretti
-Element("opzione").element.onchange = create_proxy(onchange)
-Element("calcola").element.onclick = create_proxy(oncalc)
+Element("opzione").element.onchange = lambda e: mostra_parametri()
+Element("calcola").element.onclick = lambda e: calcola()
   </py-script>
 </body>
 </html>
