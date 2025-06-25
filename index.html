@@ -1,108 +1,551 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Analisi matematica con PyScript</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
-  <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-  <script type="py-config">
-    {
-      "packages": ["sympy", "numpy", "matplotlib"]
-    }
-  </script>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Analisi matematica con PyScript</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- PyScript Latest -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css">
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
+    
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            }
+        };
+    </script>
+    
+    <style>
+        /* STILI PYSCRIPT BASE */
+        py-config {
+            display: none;
+        }
+        py-script:not(:defined) {
+            display: none;
+        }
+        py-repl:not(:defined) {
+            display: none;
+        }
+        py-title:not(:defined) {
+            display: none;
+        }
+        py-inputbox:not(:defined) {
+            display: none;
+        }
+        py-button:not(:defined) {
+            display: none;
+        }
+        py-box:not(:defined) {
+            display: none;
+        }
+
+        .spinner::after {
+            content: "";
+            box-sizing: border-box;
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: calc(40% - 20px);
+            left: calc(50% - 20px);
+            border-radius: 50%;
+        }
+        .spinner.smooth::after {
+            border-top: 4px solid rgba(255, 255, 255, 1);
+            border-left: 4px solid rgba(255, 255, 255, 1);
+            border-right: 4px solid rgba(255, 255, 255, 0);
+            animation: spinner 0.6s linear infinite;
+        }
+        @keyframes spinner {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        body {
+            padding-top: 70px;
+            padding-bottom: 60px;
+        }
+
+        /* NAVIGATION STYLES */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+            background-color: #000000;
+        }
+
+        .logo {
+            padding-right: 10px;
+            font-size: 28px;
+            height: 30px;
+            max-width: inherit;
+        }
+
+        .title {
+            text-decoration: none;
+            text-decoration-line: none;
+            text-decoration-style: initial;
+            text-decoration-color: initial;
+            font-weight: 400;
+            white-space: nowrap;
+            color: #f0ab3c;
+        }
+
+        .app-header {
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+        }
+
+        /* LAYOUT STYLES */
+        .container {
+            margin-top: 100px;
+            margin-bottom: 100px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .row.hidden {
+            display: none;
+        }
+
+        /* FORM ELEMENTS */
+        label {
+            margin-right: 30px;
+        }
+
+        #funzione {
+            width: 80%;
+            max-width: 80%;
+            float: left;
+        }
+
+        #inf, #sup, #tende {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        #opzioni {
+            width: 100%;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* BUTTONS */
+        button.btn {
+            background-color: #f0ab3c;
+            border: none;
+            color: black;
+            font-weight: bold;
+            float: right;
+        }
+        button.btn:hover {
+            background-color: #ab6c06;
+            color: black;
+        }
+
+        /* OUTPUT AREAS */
+        #scrivi {
+            margin: 10px;
+        }
+
+        .errore {
+            font-size: 30px;
+            font-weight: bold;
+            color: red;
+        }
+
+        .math-output {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #f0ab3c;
+            border-radius: 4px;
+        }
+
+        .plot-container {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        /* FOOTER */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 40px;
+            line-height: 40px;
+            background-color: #000000;
+            color: #f0ab3c;
+            text-align: center;
+        }
+
+        /* INSTRUCTIONS */
+        #istruzioni {
+            margin-bottom: 10px;
+        }
+
+        /* ALERT STYLES */
+        .alert-banner {
+            position: relative;
+            padding: 0.5rem 1.5rem 0.5rem 0.5rem;
+            margin: 5px 0;
+        }
+        .alert-banner p {
+            margin: 0;
+        }
+        .py-error {
+            background-color: #ffe9e8;
+            border: solid;
+            border-color: #f0625f;
+            color: #9d041c;
+        }
+        .py-warning {
+            background-color: rgb(255, 244, 229);
+            border: solid;
+            border-color: #ffa016;
+            color: #794700;
+        }
+    </style>
 </head>
-<body class="container py-5">
+<body>
+    <py-config>
+        packages = ["sympy", "matplotlib", "numpy"]
+    </py-config>
 
-  <h1>Analisi matematica</h1>
+    <header>
+        <nav class="navbar navbar-expand-md fixed-top">
+            <div class="app-header">
+                <img src="https://pyscript.net/assets/images/pyscript-sticker-black.svg" class="logo" alt="PyScript Logo" />
+                <a class="title" href="#" style="color: #f0ab3c;">Analisi matematica con PyScript</a>
+            </div>
+        </nav>
+    </header>
 
-  <div class="mb-3">
-    <input type="text" id="funzione" class="form-control" value="x**2 + 3*x + 2">
-  </div>
+    <main id="main" class="container">
+        <!-- Istruzioni -->
+        <div class="form-group row mb-3">
+            <div class="col-12">
+                <button py-click="toggle_instructions" type="button" class="btn">
+                    Come inserire la funzione
+                </button>
+            </div>
+        </div>
+        
+        <div class="hidden" id="istruzioni">
+            <h5>Istruzioni per scrivere la funzione</h5>
+            <div class="form-group row">
+                <div class="col-12">
+                    <ul>
+                        <li>La funzione è in termine di x</li>
+                        <li>Simboli accettati: ** per l'esponente, * per il prodotto, / per il rapporto</li>
+                        <li>Sono accettate funzioni come sin, cos, tan, log, exp, sqrt...</li>
+                    </ul>
+                    Esempio di funzione: x**2 + 2*x + 1/x**2
+                </div>
+            </div>
+        </div>
 
-  <div class="mb-3">
-    <select id="opzione" class="form-select">
-      <option value="derivata">Derivata</option>
-      <option value="integrale_indefinito">Integrale Indefinito</option>
-      <option value="integrale_definito">Integrale Definito</option>
-      <option value="limite">Limite</option>
-    </select>
-  </div>
+        <!-- Input funzione -->
+        <div class="form-group row mb-3">
+            <div class="col-8">
+                <label for="funzione">Inserisci la funzione:</label>
+            </div>
+        </div>
 
-  <div class="mb-3" id="parametri_extra">
-    <input type="text" id="limite_inf" class="form-control mb-2" placeholder="Limite inferiore" style="display:none">
-    <input type="text" id="limite_sup" class="form-control mb-2" placeholder="Limite superiore" style="display:none">
-    <input type="text" id="punto_limite" class="form-control" placeholder="x tende a..." style="display:none">
-  </div>
+        <div class="form-group row mb-3">
+            <div class="col-9">
+                <input type="text" id="funzione" name="funzione" placeholder="es: x**2 + 2*x + 1">
+            </div>
+            <div class="col-3">
+                <button py-click="conferma_fun" type="button" class="btn" id="butt_fun">Conferma</button>
+            </div>
+        </div>
 
-  <button id="calcola" class="btn btn-warning">Calcola</button>
+        <!-- Visualizzazione funzione -->
+        <div class="form-group row mb-3" id="scrivi"></div>
 
-  <h3 class="mt-4">Risultato:</h3>
-  <pre id="output"></pre>
+        <!-- Scelte operazioni -->
+        <div id="scelte" class="form-group row mb-3 hidden">
+            <div class="col-9">
+                <select id="opzioni">
+                    <option selected disabled>Che cosa vuoi calcolare?</option>
+                    <option value="DER">Derivata</option>
+                    <option value="INTI">Integrale Indefinito</option>
+                    <option value="INTD">Integrale Definito</option>
+                    <option value="LIM">Limite</option>
+                </select>
+            </div>
+            <div class="col-3">
+                <button py-click="conferma_scelta" type="button" class="btn">Conferma</button>
+            </div>
+        </div>
 
-  <h3 class="mt-4">Grafico:</h3>
-  <div id="grafico"></div>
+        <!-- Integrale definito -->
+        <div id="def" class="form-group row mb-3 hidden">
+            <div class="col-4">
+                <input type="text" id="inf" name="inf" value="0">
+                <label for="inf">Limite Inferiore</label>
+            </div>
+            <div class="col-1"></div>
+            <div class="col-4">
+                <input type="text" id="sup" name="sup" value="1">
+                <label for="sup">Limite Superiore</label>
+            </div>
+            <div class="col-3">
+                <button py-click="conferma_int" class="btn">Conferma</button>
+            </div>
+        </div>
 
-  <py-script>
-from pyscript import Element, display
+        <!-- Limite -->
+        <div id="limite" class="form-group row mb-3 hidden">
+            <div class="col-9">
+                <input type="text" id="tende" name="tende" value="0">
+                <label for="tende">Limite tendente a (digita oo per infinito)</label>
+            </div>
+            <div class="col-3">
+                <button py-click="conferma_lim" class="btn">Conferma</button>
+            </div>
+        </div>
+
+        <!-- Output -->
+        <div id="out" class="form-group row mb-3"></div>
+        
+        <!-- Grafico -->
+        <div class="form-group row mb-3" id="disegno"></div>
+    </main>
+
+    <footer class="footer text-center">
+        <span>Fatto con <a href="https://pyscript.net" target="_blank" style="color: #f0ab3c; font-weight:bold">PyScript</a></span>
+    </footer>
+
+    <py-script>
 import sympy as sp
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from pyscript import document
+from js import MathJax
 
-x = sp.Symbol('x')
+# Variabili globali
+x = sp.symbols('x')
+f = None
+aperto = False
 
-def mostra_parametri():
-    scelta = Element("opzione").value
-    Element("limite_inf").element.style.display = "none"
-    Element("limite_sup").element.style.display = "none"
-    Element("punto_limite").element.style.display = "none"
-    if scelta == "integrale_definito":
-        Element("limite_inf").element.style.display = "block"
-        Element("limite_sup").element.style.display = "block"
-    elif scelta == "limite":
-        Element("punto_limite").element.style.display = "block"
+def get_element(id):
+    """Helper function per ottenere elementi DOM"""
+    return document.querySelector(f"#{id}")
 
-def calcola():
-    out = Element("output")
-    out.clear()
-    plot = Element("grafico")
-    plot.clear()
+def toggle_instructions(event):
+    """Toggle delle istruzioni"""
+    global aperto
+    istruzioni = get_element("istruzioni")
+    if aperto:
+        istruzioni.classList.add("hidden")
+        aperto = False
+    else:
+        istruzioni.classList.remove("hidden")
+        aperto = True
+
+def render_math(latex_expr, element_id):
+    """Renderizza espressioni LaTeX usando MathJax"""
+    element = get_element(element_id)
+    if element:
+        math_html = f'<div class="math-output">$$y = {latex_expr}$$</div>'
+        element.innerHTML = math_html
+        # Aggiorna MathJax per renderizzare il nuovo contenuto
+        MathJax.typesetPromise([element])
+
+def disegna(f_expr):
+    """Disegna il grafico della funzione"""
     try:
-        f_expr = Element("funzione").value
-        f = sp.sympify(f_expr)
-        scelta = Element("opzione").value
-
-        if scelta == "derivata":
-            risultato = sp.diff(f, x)
-        elif scelta == "integrale_indefinito":
-            risultato = sp.integrate(f, x)
-        elif scelta == "integrale_definito":
-            a = sp.sympify(Element("limite_inf").value)
-            b = sp.sympify(Element("limite_sup").value)
-            risultato = sp.integrate(f, (x, a, b))
-        elif scelta == "limite":
-            t = Element("punto_limite").value
-            t_val = sp.oo if t == "oo" else -sp.oo if t == "-oo" else sp.sympify(t)
-            risultato = sp.limit(f, x, t_val)
-
-        out.write(f"Risultato: {sp.latex(risultato)}")
-
-        f_lambdified = sp.lambdify(x, f, "numpy")
-        xs = np.linspace(-10, 10, 500)
-        ys = f_lambdified(xs)
-
-        fig, ax = plt.subplots()
-        ax.plot(xs, ys)
-        ax.set_title("Grafico della funzione")
-        ax.grid()
-        display(fig, target="grafico")
-
+        # Converti la funzione sympy in una funzione numpy
+        f_lambdified = sp.lambdify(x, f_expr, modules=['numpy'])
+        
+        # Crea i punti per il grafico
+        x_vals = np.linspace(-10, 10, 1000)
+        
+        # Calcola i valori y, gestendo eventuali errori
+        try:
+            y_vals = f_lambdified(x_vals)
+            # Rimuovi valori infiniti o NaN
+            mask = np.isfinite(y_vals)
+            x_vals = x_vals[mask]
+            y_vals = y_vals[mask]
+        except:
+            # Se fallisce, prova con un range più piccolo
+            x_vals = np.linspace(-5, 5, 500)
+            y_vals = f_lambdified(x_vals)
+        
+        # Crea il grafico
+        plt.figure(figsize=(10, 6))
+        plt.plot(x_vals, y_vals, 'b-', linewidth=2)
+        plt.grid(True, alpha=0.3)
+        plt.xlabel('x')
+        plt.ylabel('y')
+        plt.title(f'Grafico di y = {sp.latex(f_expr)}')
+        plt.axhline(y=0, color='k', linewidth=0.5)
+        plt.axvline(x=0, color='k', linewidth=0.5)
+        
+        disegno = get_element("disegno")
+        disegno.innerHTML = '<div class="plot-container"></div>'
+        
+        display(plt.gcf(), target="disegno .plot-container")
+        plt.close()
+        
     except Exception as e:
-        out.write(f"Errore: {e}")
+        disegno = get_element("disegno")
+        disegno.innerHTML = f'<div class="errore">Errore nel disegnare il grafico: {str(e)}</div>'
 
-Element("opzione").element.onchange = lambda e: mostra_parametri()
-Element("calcola").element.onclick = lambda e: calcola()
-  </py-script>
+def reset():
+    """Reset degli elementi di output"""
+    out = get_element("out")
+    definito = get_element("def")
+    limite = get_element("limite")
+    
+    if out:
+        out.innerHTML = ""
+        out.classList.remove("errore")
+    if definito:
+        definito.classList.add("hidden")
+    if limite:
+        limite.classList.add("hidden")
+
+def conferma_fun(event):
+    """Conferma e processa la funzione inserita"""
+    global f
+    reset()
+    
+    funzione_input = get_element("funzione")
+    scrivi = get_element("scrivi")
+    scelte = get_element("scelte")
+    out = get_element("out")
+    disegno = get_element("disegno")
+    
+    try:
+        # Sostituisce ^ con ** per la compatibilità
+        funzione_str = funzione_input.value.replace('^', '**')
+        f = sp.sympify(funzione_str)
+        
+        # Mostra la funzione formattata
+        scrivi.innerHTML = f'<div class="math-output">Funzione inserita: $$y = {sp.latex(f)}$$</div>'
+        MathJax.typesetPromise([scrivi])
+        
+        # Mostra le opzioni
+        scelte.classList.remove("hidden")
+        
+        # Disegna il grafico
+        disegna(f)
+        
+    except Exception as e:
+        scrivi.innerHTML = ""
+        disegno.innerHTML = ""
+        scelte.classList.add("hidden")
+        out.innerHTML = f"Funzione in formato errato: {str(e)}. Riprova."
+        out.classList.add("errore")
+
+def conferma_scelta(event):
+    """Processa la scelta dell'operazione"""
+    reset()
+    opzioni = get_element("opzioni")
+    definito = get_element("def")
+    limite = get_element("limite")
+    out = get_element("out")
+    
+    selezionato = opzioni.value
+    
+    try:
+        if selezionato == "DER":
+            der = sp.diff(f, x)
+            out.innerHTML = f'<div class="math-output">La derivata della funzione è: $$\\frac{{dy}}{{dx}} = {sp.latex(der)}$$</div>'
+            MathJax.typesetPromise([out])
+            
+        elif selezionato == "INTI":
+            inti = sp.integrate(f, x)
+            out.innerHTML = f'<div class="math-output">L\'integrale indefinito della funzione è: $$\\int f(x) dx = {sp.latex(inti)} + C$$</div>'
+            MathJax.typesetPromise([out])
+            
+        elif selezionato == "INTD":
+            definito.classList.remove("hidden")
+            
+        elif selezionato == "LIM":
+            limite.classList.remove("hidden")
+            
+    except Exception as e:
+        out.innerHTML = f'<div class="errore">Errore nel calcolo: {str(e)}</div>'
+
+def conferma_int(event):
+    """Calcola l'integrale definito"""
+    reset()
+    
+    inf_input = get_element("inf")
+    sup_input = get_element("sup")
+    out = get_element("out")
+    
+    try:
+        li = inf_input.value
+        ls = sup_input.value
+        
+        # Gestisce il caso di infinito
+        if li.lower() == 'oo':
+            li = sp.oo
+        elif li.lower() == '-oo':
+            li = -sp.oo
+        else:
+            li = sp.sympify(li)
+            
+        if ls.lower() == 'oo':
+            ls = sp.oo
+        elif ls.lower() == '-oo':
+            ls = -sp.oo
+        else:
+            ls = sp.sympify(ls)
+        
+        intd = sp.integrate(f, (x, li, ls))
+        out.innerHTML = f'<div class="math-output">L\'integrale definito della funzione è: $$\\int_{{{sp.latex(li)}}}^{{{sp.latex(ls)}}} f(x) dx = {sp.latex(intd)}$$</div>'
+        MathJax.typesetPromise([out])
+        
+    except Exception as e:
+        out.innerHTML = f'<div class="errore">Errore nel calcolo dell\'integrale: {str(e)}</div>'
+
+def conferma_lim(event):
+    """Calcola il limite"""
+    reset()
+    
+    tende_input = get_element("tende")
+    out = get_element("out")
+    
+    try:
+        t = tende_input.value.strip()
+        
+        # Gestisce il caso di infinito
+        if t.lower() == 'oo':
+            t = sp.oo
+        elif t.lower() == '-oo':
+            t = -sp.oo
+        else:
+            t = sp.sympify(t)
+        
+        lim = sp.limit(f, x, t)
+        out.innerHTML = f'<div class="math-output">Il limite della funzione è: $$\\lim_{{x \\to {sp.latex(t)}}} f(x) = {sp.latex(lim)}$$</div>'
+        MathJax.typesetPromise([out])
+        
+    except Exception as e:
+        out.innerHTML = f'<div class="errore">Errore nel calcolo del limite: {str(e)}</div>'
+    </py-script>
 </body>
 </html>
