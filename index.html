@@ -4,26 +4,24 @@
   <meta charset="UTF-8">
   <title>Analisi matematica con PyScript</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
   <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-  <script type="py-config">
-  {
-    "packages": ["sympy", "numpy", "matplotlib"]
-  }
-  </script>
+  <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+  <py-env>
+    - sympy
+    - numpy
+    - matplotlib
+  </py-env>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="container py-5">
-  <h1 class="mb-4">Analisi matematica con PyScript</h1>
+  <h1>Analisi matematica con PyScript</h1>
 
   <div class="mb-3">
-    <label for="funzione" class="form-label">Inserisci la funzione in x (es: <code>x**2 + 3*x + 2</code>)</label>
-    <input type="text" class="form-control" id="funzione" value="x**2 + 3*x + 2">
+    <input type="text" id="funzione" class="form-control" value="x**2 + 3*x + 2">
   </div>
 
   <div class="mb-3">
-    <label for="opzione" class="form-label">Scegli cosa calcolare:</label>
-    <select class="form-select" id="opzione">
+    <select id="opzione" class="form-select">
       <option value="derivata">Derivata</option>
       <option value="integrale_indefinito">Integrale Indefinito</option>
       <option value="integrale_definito">Integrale Definito</option>
@@ -31,88 +29,74 @@
     </select>
   </div>
 
-  <div id="parametri_extra" class="row mb-3">
-    <div class="col" id="limiti_definiti" style="display: none;">
-      <input type="text" class="form-control mb-2" id="limite_inf" placeholder="Limite inferiore">
-      <input type="text" class="form-control" id="limite_sup" placeholder="Limite superiore">
-    </div>
-    <div class="col" id="limite_singolo" style="display: none;">
-      <input type="text" class="form-control" id="punto_limite" placeholder="x tende a... (es: 0, oo)">
-    </div>
+  <div id="extra" class="mb-3">
+    <input type="text" id="limite_inf" class="form-control mb-2" placeholder="Limite inferiore" style="display:none">
+    <input type="text" id="limite_sup" class="form-control mb-2" placeholder="Limite superiore" style="display:none">
+    <input type="text" id="punto_limite" class="form-control" placeholder="x tende a..." style="display:none">
   </div>
 
   <button id="calcola" class="btn btn-warning">Calcola</button>
 
-  <h3 class="mt-4">Risultato:</h3>
+  <h3>Risultato:</h3>
   <pre id="output"></pre>
 
-  <h3 class="mt-4">Grafico:</h3>
+  <h3>Grafico:</h3>
   <div id="plot"></div>
 
   <py-script>
-from pyscript import Element
+from pyscript import Element, create_proxy, write
 import sympy as sp
 import numpy as np
 import matplotlib.pyplot as plt
 
 x = sp.symbols('x')
 
-def aggiorna_parametri(event):
-    opzione = Element("opzione").value
-    Element("limiti_definiti").element.style.display = "none"
-    Element("limite_singolo").element.style.display = "none"
-    if opzione == "integrale_definito":
-        Element("limiti_definiti").element.style.display = "block"
-    elif opzione == "limite":
-        Element("limite_singolo").element.style.display = "block"
+def onchange(event):
+    v = Element("opzione").value
+    Element("limite_inf").element.style.display = "none"
+    Element("limite_sup").element.style.display = "none"
+    Element("punto_limite").element.style.display = "none"
+    if v == "integrale_definito":
+        Element("limite_inf").element.style.display = "block"
+        Element("limite_sup").element.style.display = "block"
+    elif v == "limite":
+        Element("punto_limite").element.style.display = "block"
 
-def calcola(event):
-    funzione_str = Element("funzione").value
-    opzione = Element("opzione").value
+def oncalc(event):
     output = Element("output")
     plot_div = Element("plot")
     output.clear()
     plot_div.clear()
-
     try:
-        f = sp.sympify(funzione_str)
-        risultato = ""
-
-        if opzione == "derivata":
-            risultato = sp.diff(f, x)
-        elif opzione == "integrale_indefinito":
-            risultato = sp.integrate(f, x)
-        elif opzione == "integrale_definito":
+        f = sp.sympify(Element("funzione").value)
+        opt = Element("opzione").value
+        if opt=="derivata":
+            res = sp.diff(f, x)
+        elif opt=="integrale_indefinito":
+            res = sp.integrate(f, x)
+        elif opt=="integrale_definito":
             a = sp.sympify(Element("limite_inf").value)
             b = sp.sympify(Element("limite_sup").value)
-            risultato = sp.integrate(f, (x, a, b))
-        elif opzione == "limite":
-            val = Element("punto_limite").value
-            if val == "oo":
-                punto = sp.oo
-            elif val == "-oo":
-                punto = -sp.oo
-            else:
-                punto = sp.sympify(val)
-            risultato = sp.limit(f, x, punto)
+            res = sp.integrate(f, (x, a, b))
+        else:
+            pt = Element("punto_limite").value
+            punkt = sp.oo if pt=="oo" else -sp.oo if pt=="-oo" else sp.sympify(pt)
+            res = sp.limit(f, x, punkt)
 
-        output.write(f"Risultato: {sp.latex(risultato)}")
+        output.write(f"{sp.latex(res)}")
 
-        # Disegno il grafico
-        f_lambdified = sp.lambdify(x, f, modules=["numpy"])
-        x_vals = np.linspace(-10, 10, 400)
-        y_vals = f_lambdified(x_vals)
+        xs = np.linspace(-10,10,400)
+        ys = sp.lambdify(x, f, "numpy")(xs)
         fig, ax = plt.subplots()
-        ax.plot(x_vals, y_vals, label="f(x)")
-        ax.grid()
-        ax.set_title("Grafico della funzione")
-        plot_div.write(fig)
+        ax.plot(xs, ys); ax.grid()
+        write("plot", fig)
 
     except Exception as e:
         output.write(f"Errore: {e}")
 
-Element("calcola").element.onclick = calcola
-Element("opzione").element.onchange = aggiorna_parametri
+# associa callback corretti
+Element("opzione").element.onchange = create_proxy(onchange)
+Element("calcola").element.onclick = create_proxy(oncalc)
   </py-script>
 </body>
 </html>
